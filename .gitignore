@@ -1,0 +1,5 @@
+codex-app/
+Codex.dmg
+result
+.direnv/
+native-build/node_modules/
