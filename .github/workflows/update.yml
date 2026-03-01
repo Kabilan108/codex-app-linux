@@ -1,0 +1,63 @@
+name: Weekly Codex Update
+
+on:
+  schedule:
+    - cron: '0 22 * * 0'  # Every Sunday at 22:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Run update script
+        id: update
+        run: |
+          bash update.sh
+          if git diff --quiet flake.nix; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: peter-evans/create-pull-request@v7
+        if: steps.update.outputs.changed == 'true'
+        id: pr
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update Codex DMG hash"
+          branch: update/codex-dmg
+          delete-branch: true
+          title: "chore: update Codex DMG hash"
+          labels: codex-update
+          body: |
+            Automated weekly update of the Codex DMG hash.
+
+            The DMG at `https://persistent.oaistatic.com/codex-app-prod/Codex.dmg` has a new hash.
+
+            **Next steps after merging:**
+            - Run `nix build .` to rebuild
+            - If native module versions changed, update `native-build/package.json` and follow the npmDeps hash update process.
+
+      - uses: kabilan108/actions/discord-notify@v1
+        if: steps.update.outputs.changed == 'true'
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          level: success
+          title: "New Codex version — PR opened"
+          description: "${{ steps.pr.outputs.pull-request-url }}"
+
+      - uses: kabilan108/actions/discord-notify@v1
+        if: failure()
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          level: error
+          title: "Weekly Codex update failed"
+          description: "Check the workflow run for details."
