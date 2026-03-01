@@ -110,7 +110,7 @@
 
       codexDmg = pkgs.fetchurl {
         url = "https://persistent.oaistatic.com/codex-app-prod/Codex.dmg";
-        hash = "sha256-0YLr6GnCilNGmpZ27CDH7bTzkYZ5wIh6ILFvGaNBfhs=";
+        hash = "sha256-9YUd1WBIM4pJlCc6A41us1/Z3mXUPpSIicJ9DI5cShg=";
       };
 
       codex-desktop = pkgs.stdenv.mkDerivation {
@@ -121,7 +121,7 @@
 
         npmDeps = pkgs.fetchNpmDeps {
           src = ./native-build;
-          hash = "sha256-1MLmspoV+sYAf+T24AjXTYMW/4Giv7/mGjxQrKcfgCY=";
+          hash = "sha256-CnQmLBK4MfNtwz6WMsNEh9bAmybL1ujTlKg3EK33984=";
         };
 
         makeCacheWritable = true;
